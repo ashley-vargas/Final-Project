@@ -1,0 +1,100 @@
+---
+title: "map_with_amts"
+author: "Andrew Padgett"
+date: "10/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)     # for data cleaning and plotting
+library(googlesheets4) # for reading googlesheet data
+library(lubridate)     # for date manipulation
+library(openintro)     # for the abbr2state() function
+library(palmerpenguins)# for Palmer penguin data
+library(maps)          # for map data       
+library(gplots)        # for col2hex() function
+library(RColorBrewer)  # for color palettes
+library(sf)            # for working with spatial data
+library(leaflet)       # for highly customizable mapping
+library(ggthemes)      # for more themes (including theme_map())
+library(plotly)        # for the ggplotly() - basic interactivity
+library(gganimate)     # for adding animation layers to ggplots
+library(gifski)        # for creating the gif (don't need to load this library every time,but need it installed)
+library(transformr)    # for "tweening" (gganimate)
+library(shiny)         # for creating interactive apps
+library(patchwork)     # for nicely combining ggplot2 graphs  
+library(gt)            # for creating nice tables
+library(rvest)         # for scraping data
+library(robotstxt)     # for checking if you can scrape data
+gs4_deauth()           # To not have to authorize each time you knit.
+library(mapproj)
+theme_set(theme_minimal())
+library(ggmap)
+```
+
+
+
+```{r}
+mn_contrib <- read.csv("indivs_Minnesota18.csv")
+
+zip_codes <- read.csv("zip_code_database.csv")
+```
+
+
+```{r}
+states <- map_data("state")
+mn_df <- subset(states, region == "minnesota")
+counties <- map_data("county")
+mn_county <- filter(counties, region == "minnesota") %>%
+  select(-region) %>%
+  mutate(region = subregion)
+```
+
+
+```{r}
+main <- mn_contrib %>%
+  mutate(Zip = as.numeric(Zip)) %>%
+  left_join(zip_codes,
+            by = "Zip") %>%
+  mutate(county1 = str_to_lower(county),
+         county2 = str_remove(county1, pattern = " county"),
+         county2 = str_remove(county2, pattern = "\\.")) %>%
+  select(-acceptable_cities, 
+         -unacceptable_cities, 
+         -state, 
+         -decommissioned, 
+         -country, 
+         -world_region, 
+         -area_codes, 
+         -timezone, 
+         -type, 
+         -Microfilm, 
+         -OtherID, 
+         -Type, 
+         -Realcode, 
+         -Street, 
+         -Ultorg, 
+         -Contribid, 
+         -Cycle, 
+         -Recipcode, 
+         -Source, 
+         -primary_city, 
+         -county, 
+         -county1) %>%
+  mutate(county = county2) %>%
+  select(-county2) %>%
+  group_by(county) %>%
+  summarize(mean_amt = mean(Amount))
+
+
+main %>%
+  ggplot() + 
+  geom_map(map = mn_county, aes(map_id = county, fill = -mean_amt)) + 
+  expand_limits(x = mn_county$long, y = mn_county$lat) 
+```
