@@ -1,7 +1,7 @@
 ---
-title: "map_with_amts"
+title: "map with avg_amt"
 author: "Andrew Padgett"
-date: "10/16/2020"
+date: "10/14/2020"
 output: html_document
 ---
 
@@ -49,7 +49,7 @@ zip_codes <- read.csv("zip_code_database.csv")
 
 ```{r}
 states <- map_data("state")
-mn_df <- subset(states, region == "minnesota")
+mn_state <- subset(states, region == "minnesota")
 counties <- map_data("county")
 mn_county <- filter(counties, region == "minnesota") %>%
   select(-region) %>%
@@ -88,13 +88,37 @@ main <- mn_contrib %>%
          -county, 
          -county1) %>%
   mutate(county = county2) %>%
-  select(-county2) %>%
-  group_by(county) %>%
-  summarize(mean_amt = mean(Amount))
+  select(-county2)
+```
 
+```{r, fig.height = 12}
+main%>%
+  filter(Gender == c("F", "M"), .keep_all = TRUE) %>%
+  group_by(county, Gender) %>%
+  mutate(total_contribs = n()) %>%
+  filter(total_contribs > 25) %>%
+  summarize(mean_amt = mean(Amount)) %>%
+  ggplot(aes(x = mean_amt, y = county)) +
+  geom_col(aes(fill = Gender))
+```
 
+```{r}
 main %>%
+  group_by(county) %>%
+  mutate(total_contribs = n()) %>%
+  filter(total_contribs > 25) %>%
+  summarize(mean_amt = mean(Amount)) %>%
   ggplot() + 
-  geom_map(map = mn_county, aes(map_id = county, fill = -mean_amt)) + 
+  geom_map(map = mn_county, aes(map_id = county, fill = mean_amt)) +
   expand_limits(x = mn_county$long, y = mn_county$lat) 
+```
+
+```{r, fig.width = 10}
+main %>%
+  filter(Amount > 1) %>%
+  ggplot(aes(x = Amount)) + 
+  geom_histogram(bins = 30) + 
+  scale_x_log10(breaks = scales::log_breaks(n=10), labels = scales::comma) + 
+  scale_y_log10(breaks = scales::log_breaks(n=10), labels = scales::comma) +
+  annotation_logticks(sides = "bl")
 ```
