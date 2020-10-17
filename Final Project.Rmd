@@ -148,4 +148,22 @@ gender_amounts %>%
 
 ```
 
+```{r}
+
+mn_contrib %>% 
+  filter(str_length(Zip) == 5) %>% 
+  select(Zip) %>% 
+  unique()
+
+
+
+
+```
+
+
+
+
+
+
+
 
