@@ -100,7 +100,10 @@ main %>%
 ``` 
 
 
-# So, I tried to create a map that shows the proportion of donations amounts by gender in each county. However, I realized that I am not sure how to represent different percentages within one county. I just created this map that shows the proportion of donations amounts from women. I'll try to go to Robert's office hours tomorrow and ask if he knows how to include the different percentages!
+# So, I tried to create a map that shows the proportion of donations amounts by gender in each county. However, I //
+#realized that I am not sure how to represent different percentages within one county. I just created this map //
+#that shows the proportion of donations amounts from women. I'll try to go to Robert's office hours tomorrow and //
+# ask if he knows how to include the different percentages!
 
 
 ```{r}
