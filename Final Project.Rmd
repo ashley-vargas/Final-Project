@@ -100,6 +100,49 @@ main %>%
 ``` 
 
 
+# So, I tried to create a map that shows the proportion of donations amounts by gender in each county. However, I realized that I am not sure how to represent different percentages within one county. I just created this map that shows the proportion of donations amounts from women. I'll try to go to Robert's office hours tomorrow and ask if he knows how to include the different percentages!
 
+
+```{r}
+main <- mn_contrib %>%
+  mutate(Zip = as.numeric(Zip)) %>%
+  left_join(zip_codes,
+            by = "Zip") %>%
+  mutate(county1 = str_to_lower(county),
+         county2 = str_remove(county1, pattern = " county"),
+         county2 = str_remove(county2, pattern = "\\.")) %>%
+  select(county2,
+         Gender,
+         Amount) %>%
+  mutate(county = county2) %>%
+  select(-county2) %>%
+  group_by(county) %>%
+  summarize(total_amount = sum(Amount))
+
+gender_amounts <- mn_contrib %>%
+  mutate(Zip = as.numeric(Zip)) %>%
+  left_join(zip_codes,
+            by = "Zip") %>%
+  mutate(county1 = str_to_lower(county),
+         county2 = str_remove(county1, pattern = " county"),
+         county2 = str_remove(county2, pattern = "\\.")) %>%
+  select(county2,
+         Gender,
+         Amount) %>%
+  mutate(county = county2) %>%
+  select(-county2) %>%
+  group_by(county, Gender) %>%
+  summarize(total_amount_gender = sum(Amount)) %>%
+  filter(Gender == "F")
+
+gender_amounts <- left_join(gender_amounts, main, by = c("county")) %>% 
+  mutate(proportion_women = total_amount_gender / total_amount)
+
+gender_amounts %>%
+  ggplot() + 
+  geom_map(map = mn_county, aes(map_id = county, fill = proportion_women)) + 
+  expand_limits(x = mn_county$long, y = mn_county$lat) 
+
+```
 
 
