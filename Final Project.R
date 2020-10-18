@@ -58,8 +58,8 @@ ui <- fluidPage(selectInput(inputId = "userchoice1",
                 numericInput(inputId = "userchoice2", 
                             label = "Input Zip Code Here", 
                             value = 55105),
-                selectInput("county", 
-                            "county", 
+                selectInput("userchoice3", 
+                            "Input County Here", 
                             choices = list("ramsey","hennepin","houston","anoka","winona","renville","st louis",
                                            "sherburne","brown","itasca","scott","dakota","washington","olmsted","wright",
                                            "rice","goodhue","kandiyohi","le sueur","mcleod","carlton","becker","blue earth",
@@ -91,10 +91,10 @@ server <- function(input, output){
   output$timeplot <- renderPlot({
     main %>% 
       filter(Amount > 0) %>% 
-      filter(Gender == input$userchoice1,Zip == input$userchoice2|county %in% input$county) %>% 
+      filter(Gender == input$userchoice1,Zip == input$userchoice2|county %in% input$userchoice3) %>% 
       ggplot(aes(Amount,col=county)) +
       geom_density(binwidth = 10) +
-      
+      scale_x_log10() +
       theme_minimal()})
     }
 
