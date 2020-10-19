@@ -91,14 +91,18 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
 server <- function(input, output){
   output$timeplot <- renderPlot({
     main %>% 
-      filter(Amount > 0, Gender == c("F", "M")) %>% 
+      filter(Amount > 0) %>% 
       filter(Gender == input$userchoice1, county == input$userchoice2) %>% 
       ggplot(aes(x = Amount, fill=county)) +
       geom_histogram() +
+      facet_wrap(~county, scales="free_y") +
       geom_vline(aes(xintercept=mean(Amount)),
                  color="royalblue1", linetype="dashed", size=1) +
       scale_x_log10(breaks = scales::log_breaks(n=10), labels = scales::comma) +
       scale_color_brewer(palette="Accent") +
+      labs(title = "Minnesota Political Donations by County and Sex",
+           x = "",
+           y = "") +
       theme_minimal()})
 }
 
