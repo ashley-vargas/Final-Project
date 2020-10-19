@@ -7,8 +7,8 @@ library(shinythemes)
 
 
 
-mn_contrib <- read_csv("~/Desktop/Stat112/indivs_Minnesota18.csv")
-zip_codes <- read_csv("~/Desktop/Stat112/zip_code_database.csv")
+mn_contrib <- read_csv("indivs_Minnesota18.csv")
+zip_codes <- read_csv("zip_code_database.csv")
 
 
 
@@ -92,11 +92,14 @@ server <- function(input, output){
   output$timeplot <- renderPlot({
     main %>% 
       filter(Amount > 0) %>% 
-      filter(Gender == input$userchoice1, county == input$userchoice2) %>% 
+      filter(Gender == input$userchoice1, county == input$userchoice2) %>%
+      group_by(county) %>%
+      mutate(avg = mean(Amount)) %>%
+      ungroup() %>%
       ggplot(aes(x = Amount, fill=county)) +
       geom_histogram() +
       facet_wrap(~county, scales="free_y") +
-      geom_vline(aes(xintercept=mean(Amount)),
+      geom_vline(aes(xintercept= avg),
                  color="royalblue1", linetype="dashed", size=1) +
       scale_x_log10(breaks = scales::log_breaks(n=10), labels = scales::comma) +
       scale_color_brewer(palette="Accent") +
