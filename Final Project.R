@@ -6,8 +6,8 @@ library(rsconnect)
 
 
 
-mn_contrib <- read_csv("~/Desktop/Stat112/indivs_Minnesota18.csv")
-zip_codes <- read_csv("~/Desktop/Stat112/zip_code_database.csv")
+mn_contrib <- read.csv("indivs_Minnesota18.csv")
+zip_codes <- read.csv("zip_code_database.csv")
 
 
 states <- map_data("state")
@@ -55,9 +55,18 @@ main <- mn_contrib %>%
 ui <- fluidPage(theme = shinytheme("cerulean"),
                 selectInput(inputId = "userchoice1", 
                             label = "Input Gender Here", 
+<<<<<<< HEAD
                             choices = c(Female = "F", Male = "M"), 
                             multiple = FALSE),
                 selectInput(inputId = "userchoice2", 
+=======
+                            choices = c("F", "M", "U", "N"),
+                            multiple = FALSE), 
+                numericInput(inputId = "userchoice2", 
+                            label = "Input Zip Code Here", 
+                            value = 55105),
+                selectInput("userchoice3", 
+>>>>>>> 2de7100493dd5cc38450f8a7533e8b5e7bc9ca39
                             "Input County Here", 
                             choices = list("ramsey","hennepin","houston","anoka","winona","renville","st louis",
                                            "sherburne","brown","itasca","scott","dakota","washington","olmsted","wright",
@@ -81,7 +90,11 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                                            "antrim","oktibbeha","santa clara","marathon","mahoning","anne arundel","ada",
                                            "lee","gallatin","burleigh","navajo","midland"),
                             selected=list("ramsey","hennepin"),
+<<<<<<< HEAD
                             multiple = TRUE), 
+=======
+                            multiple = TRUE),
+>>>>>>> 2de7100493dd5cc38450f8a7533e8b5e7bc9ca39
                 submitButton(text = "Create my plot!"),
                 plotOutput(outputId = "timeplot"))
 
@@ -89,6 +102,7 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
 server <- function(input, output){
   output$timeplot <- renderPlot({
     main %>% 
+<<<<<<< HEAD
       filter(Amount > 0, Gender == c("F", "M")) %>% 
       filter(Gender == input$userchoice1, county == input$userchoice2) %>% 
       ggplot(aes(x = Amount, col=county)) +
@@ -97,6 +111,13 @@ server <- function(input, output){
                  color="royalblue1", linetype="dashed", size=1) +
       scale_x_log10(labels = scales::comma) +
       scale_color_brewer(palette="Accent") +
+=======
+      filter(Amount > 0) %>% 
+      filter(Gender == input$userchoice1,Zip == input$userchoice2|county %in% input$userchoice3) %>% 
+      ggplot(aes(Amount,col=county)) +
+      geom_density(binwidth = 10) +
+      scale_x_log10() +
+>>>>>>> 2de7100493dd5cc38450f8a7533e8b5e7bc9ca39
       theme_minimal()})
 }
 
