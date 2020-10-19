@@ -155,13 +155,19 @@ mn_contrib %>%
   select(Zip) %>% 
   unique()
 
-
-
-
 ```
 
 
+```{r}
 
+hi <- mn_contrib %>% 
+  filter(Gender == c("U", "N"))
+
+
+hi
+
+
+```
 
 
 
