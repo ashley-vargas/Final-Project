@@ -5,12 +5,15 @@ library(tidyverse)
 library(rsconnect)
 library(shinythemes)
 library(maps)
+library(plotly)
 
 
 
 
 mn_contrib <- read_csv("indivs_Minnesota18.csv")
 zip_codes <- read_csv("zip_code_database.csv")
+committees <- read.csv("fecinfo.csv")
+candidates <- read.csv("candidates.csv")
 
 
 
@@ -52,7 +55,30 @@ main <- mn_contrib %>%
          -county, 
          -county1) %>%
   mutate(county = county2) %>%
-  select(-county2) 
+  select(-county2) %>%
+  left_join(committees, by = "CmteId") %>%
+  left_join(candidates, by =  c("cm_cand_id" = "cand_id")) %>%
+  select(-Fectransid, 
+         -Recipid, 
+         -CmteId, 
+         -cm_treasurer_name, 
+         -cm_address_line_1, 
+         -cm_address_line_2, 
+         -cm_city, 
+         -cm_state, 
+         -cm_zip, 
+         -cm_desig, 
+         -cm_type, 
+         -cm_freq, 
+         -cm_interest, 
+         -cm_cand_id, 
+         -cand_election_year, 
+         -cand_status, 
+         -cand_cmte, 
+         -cand_st1, 
+         -cand_st2, 
+         -cand_zip,
+         -cand_state2) 
 
 ui<-fluidPage(
   titlePanel("Minnesota Political Donations"),
