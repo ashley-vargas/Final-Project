@@ -52,59 +52,80 @@ main <- mn_contrib %>%
   mutate(county = county2) %>%
   select(-county2) 
 
+ui<-fluidPage(
+  titlePanel("Minnesota Political Donations"),
+  
+  sidebarLayout(position = "left",
+                sidebarPanel("sidebar panel",
+                             selectInput(inputId = "userchoice1", 
+                                         label = "Input Gender Here", 
+                                         choices = c(Female = "F", Male = "M"), 
+                                         multiple = FALSE),
+                             selectInput(inputId = "userchoice2", 
+                                         "Input County Here", 
+                                         choices = list("ramsey","hennepin","houston","anoka","winona","renville","st louis",
+                                                        "sherburne","brown","itasca","scott","dakota","washington","olmsted","wright",
+                                                        "rice","goodhue","kandiyohi","le sueur","mcleod","carlton","becker","blue earth",
+                                                        "benton","carver","mille lacs","clay","cook","otter tail","big stone",
+                                                        "chisago","stearns","mower","pine","hubbard","todd","crow wing","meeker",
+                                                        "polk","nicollet","aitkin","wadena","faribault","pierce","isanti","fillmore",
+                                                        "lake","beltrami","cass","st croix","martin","douglas","stevens","morrison",
+                                                        "watonwan","cottonwood","swift","clearwater","lyon","sibley","steele","wabasha",
+                                                        "freeborn","murray","wilkin","traverse","marshall","norman","koochiching",
+                                                        "chippewa","lac qui parle","grant","yellow medicine","roseau","pennington",
+                                                        "red lake","dodge","pope","redwood","kanabec","pipestone","erie","lake of the woods",
+                                                        "lincoln","nobles","jackson","santa fe","st louis city","waseca","madison",
+                                                        "dupage","washtenaw","rock","marin","kittson","worcester","portage","tippecanoe",
+                                                        "clark","milwaukee","harris","fayette","osage","macomb","taos","wayne","carbon",
+                                                        "rankin","nassau","burnett","chaves","hamilton","bernalillo","isabella","ingham",
+                                                        "lancaster","marquette","denver","clare","panola","bay","richland","traill",
+                                                        "pembina","avoyelles parish","wake","johnson","district of columbia","montgomery",
+                                                        "san juan","missoula","woodbury","fairfax","cuyahoga","berrien","los alamos",
+                                                        "boone","fulton","prince george's","lewis and clark","santa barbara","king",
+                                                        "antrim","oktibbeha","santa clara","marathon","mahoning","anne arundel","ada",
+                                                        "lee","gallatin","burleigh","navajo","midland"),
+                                         selected=list("ramsey","hennepin"),
+                                         multiple = TRUE), 
+                             submitButton(text = "Create my plot!")
+                ),
+                mainPanel("main panel",
+                          fluidRow(
+                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("timeplot",width="400px",height="300px"), plotOutput("mapping",width="400px",height="300px"))
+                          )
+                )
+  )
+)
 
-ui <- fluidPage(theme = shinytheme("cerulean"),
-                
-                selectInput(inputId = "userchoice2", 
-                            "Input County Here", 
-                            choices = list("ramsey","hennepin","houston","anoka","winona","renville","st louis",
-                                           "sherburne","brown","itasca","scott","dakota","washington","olmsted","wright",
-                                           "rice","goodhue","kandiyohi","le sueur","mcleod","carlton","becker","blue earth",
-                                           "benton","carver","mille lacs","clay","cook","otter tail","big stone",
-                                           "chisago","stearns","mower","pine","hubbard","todd","crow wing","meeker",
-                                           "polk","nicollet","aitkin","wadena","faribault","pierce","isanti","fillmore",
-                                           "lake","beltrami","cass","st croix","martin","douglas","stevens","morrison",
-                                           "watonwan","cottonwood","swift","clearwater","lyon","sibley","steele","wabasha",
-                                           "freeborn","murray","wilkin","traverse","marshall","norman","koochiching",
-                                           "chippewa","lac qui parle","grant","yellow medicine","roseau","pennington",
-                                           "red lake","dodge","pope","redwood","kanabec","pipestone","erie","lake of the woods",
-                                           "lincoln","nobles","jackson","santa fe","st louis city","waseca","madison",
-                                           "dupage","washtenaw","rock","marin","kittson","worcester","portage","tippecanoe",
-                                           "clark","milwaukee","harris","fayette","osage","macomb","taos","wayne","carbon",
-                                           "rankin","nassau","burnett","chaves","hamilton","bernalillo","isabella","ingham",
-                                           "lancaster","marquette","denver","clare","panola","bay","richland","traill",
-                                           "pembina","avoyelles parish","wake","johnson","district of columbia","montgomery",
-                                           "san juan","missoula","woodbury","fairfax","cuyahoga","berrien","los alamos",
-                                           "boone","fulton","prince george's","lewis and clark","santa barbara","king",
-                                           "antrim","oktibbeha","santa clara","marathon","mahoning","anne arundel","ada",
-                                           "lee","gallatin","burleigh","navajo","midland"),
-                            selected=list("ramsey","hennepin"),
-                            multiple = TRUE), 
-                submitButton(text = "Create my plot!"),
-                plotOutput(outputId = "timeplot"))
+
+
 
 
 server <- function(input, output){
   output$timeplot <- renderPlot({
     main %>% 
       filter(Amount > 0) %>% 
-      filter(Gender == c("M", "F"), county == input$userchoice2) %>%
-      group_by(county, Gender) %>%
-      mutate(avg = mean(Amount)) %>%
-      ungroup() %>%
-      ggplot(aes(x = Amount)) +
-      geom_histogram(data=subset(main, Gender == "M" & county == input$userchoice2),fill = "red", alpha = 0.3) +
-      geom_histogram(data=subset(main, Gender == "F" & county == input$userchoice2),fill = "blue", alpha = 0.3) +
+      filter(Gender %in%  input$userchoice1, county == input$userchoice2) %>% 
+      ggplot(aes(x = Amount, fill=county)) +
+      geom_histogram() +
       facet_wrap(~county, scales="free_y") +
-      geom_vline(aes(xintercept= avg),
-                 color= "red", linetype="dashed", size=1) +
-      scale_x_log10(breaks = scales::log_breaks(n=10), labels = scales::comma_format(accuracy = 1)) +
+      geom_vline(aes(xintercept=mean(Amount)),
+                 color="royalblue1", linetype="dashed", size=1) +
+      scale_x_log10(labels = scales::comma) +
       scale_color_brewer(palette="Accent") +
       labs(title = "Minnesota Political Donations by County and Sex",
            x = "",
            y = "") +
-      geom_text(aes(x=avg,y=50,label=round(avg,0)), color="black",angle = 90, size=2.3,check_overlap = TRUE)+
       theme_minimal()})
+  output$mapping <- renderPlot({
+    main %>%
+      group_by(county) %>%
+      mutate(total_contribs = n()) %>%
+      filter(total_contribs > 25) %>%
+      summarize(mean_amt = mean(Amount)) %>%
+      ggplot() + 
+      geom_map(map = mn_county, aes(map_id = county, fill = mean_amt)) +
+      labs(x="long",y="lat",title = "Mean amount of donations for each county")+
+      expand_limits(x = mn_county$long, y = mn_county$lat)})
 }
 
 
@@ -115,9 +136,7 @@ shinyApp(ui = ui, server = server)
 
 
 
-
-
-#add 3rd choice input? and titles 
+#another choice input. add titles (bold and center)
 
 
 
