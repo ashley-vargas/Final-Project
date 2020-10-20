@@ -103,6 +103,7 @@ server <- function(input, output){
       labs(title = "Minnesota Political Donations by County and Sex",
            x = "",
            y = "") +
+      geom_text(aes(x=avg,y=50,label=round(avg,0)), color="black",angle = 90, size=2.3,check_overlap = TRUE)+
       theme_minimal()})
 }
 
