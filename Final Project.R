@@ -3,7 +3,8 @@ library(tidyverse)
 library(rsconnect)
 library(shinythemes)
 library(maps)
-library(plotly)
+
+
 
 
 
