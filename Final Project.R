@@ -53,12 +53,8 @@ main <- mn_contrib %>%
   select(-county2) 
 
 
-
 ui <- fluidPage(theme = shinytheme("cerulean"),
-                selectInput(inputId = "userchoice1", 
-                            label = "Input Gender Here", 
-                            choices = c(Female = "F", Male = "M"), 
-                            multiple = FALSE),
+                
                 selectInput(inputId = "userchoice2", 
                             "Input County Here", 
                             choices = list("ramsey","hennepin","houston","anoka","winona","renville","st louis",
@@ -84,10 +80,6 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                                            "lee","gallatin","burleigh","navajo","midland"),
                             selected=list("ramsey","hennepin"),
                             multiple = TRUE), 
-                selectInput(inputId = "userchoice3", 
-                            label = "Input Retired or Not Here", 
-                            choices = c('Retired' = "TRUE", 'Not Retired' = "FALSE"), 
-                            multiple = FALSE),
                 submitButton(text = "Create my plot!"),
                 plotOutput(outputId = "timeplot"))
 
@@ -95,18 +87,25 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
 server <- function(input, output){
   output$timeplot <- renderPlot({
     main %>% 
-      filter(Amount > 0, Gender == c("F", "M")) %>% 
-      filter(Gender == input$userchoice1, county == input$userchoice2) %>% 
-      group_by(county)%>%
-      ggplot(aes(x = Amount, fill=county)) +
-      geom_histogram() +
-      geom_vline(aes(xintercept=mean(Amount)),
-                 color="royalblue1", linetype="dashed", size=1) +
-      scale_x_log10(labels = scales::comma) +
+      filter(Amount > 0) %>% 
+      filter(Gender == c("M", "F"), county == input$userchoice2) %>%
+      group_by(county, Gender) %>%
+      mutate(avg = mean(Amount)) %>%
+      ungroup() %>%
+      ggplot(aes(x = Amount)) +
+      geom_histogram(data=subset(main, Gender == "M" & county == input$userchoice2),fill = "red", alpha = 0.3) +
+      geom_histogram(data=subset(main, Gender == "F" & county == input$userchoice2),fill = "blue", alpha = 0.3) +
+      facet_wrap(~county, scales="free_y") +
+      geom_vline(aes(xintercept= avg),
+                 color= "red", linetype="dashed", size=1) +
+      scale_x_log10(breaks = scales::log_breaks(n=10), labels = scales::comma_format(accuracy = 1)) +
       scale_color_brewer(palette="Accent") +
-      facet_wrap(. ~ cyl, scales="free_y")+
+      labs(title = "Minnesota Political Donations by County and Sex",
+           x = "",
+           y = "") +
       theme_minimal()})
 }
+
 
 
 
