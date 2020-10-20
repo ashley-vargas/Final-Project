@@ -5,8 +5,8 @@ library(shinythemes)
 
 
 
-mn_contrib <- read_csv("~/Desktop/Stat112/indivs_Minnesota18.csv")
-zip_codes <- read_csv("~/Desktop/Stat112/zip_code_database.csv")
+mn_contrib <- read_csv("indivs_Minnesota18.csv")
+zip_codes <- read_csv("zip_code_database.csv")
 
 
 
