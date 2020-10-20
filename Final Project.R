@@ -7,8 +7,8 @@ library(shinythemes)
 
 
 
-mn_contrib <- read_csv("~/Desktop/Stat112/indivs_Minnesota18.csv")
-zip_codes <- read_csv("~/Desktop/Stat112/zip_code_database.csv")
+mn_contrib <- read_csv("indivs_Minnesota18.csv")
+zip_codes <- read_csv("zip_code_database.csv")
 
 
 
@@ -84,6 +84,10 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                                            "lee","gallatin","burleigh","navajo","midland"),
                             selected=list("ramsey","hennepin"),
                             multiple = TRUE), 
+                selectInput(inputId = "userchoice3", 
+                            label = "Input Retired or Not Here", 
+                            choices = c('Retired' = "TRUE", 'Not Retired' = "FALSE"), 
+                            multiple = FALSE),
                 submitButton(text = "Create my plot!"),
                 plotOutput(outputId = "timeplot"))
 
@@ -93,12 +97,14 @@ server <- function(input, output){
     main %>% 
       filter(Amount > 0, Gender == c("F", "M")) %>% 
       filter(Gender == input$userchoice1, county == input$userchoice2) %>% 
-      ggplot(aes(x = Amount, col=county)) +
-      geom_density() +
+      group_by(county)%>%
+      ggplot(aes(x = Amount, fill=county)) +
+      geom_histogram() +
       geom_vline(aes(xintercept=mean(Amount)),
                  color="royalblue1", linetype="dashed", size=1) +
       scale_x_log10(labels = scales::comma) +
       scale_color_brewer(palette="Accent") +
+      facet_wrap(. ~ cyl, scales="free_y")+
       theme_minimal()})
 }
 
