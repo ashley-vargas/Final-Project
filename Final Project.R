@@ -2,6 +2,8 @@ library(shiny)
 library(tidyverse)
 library(rsconnect)
 library(shinythemes)
+library(maps)
+library(plotly)
 
 
 
@@ -105,10 +107,13 @@ server <- function(input, output){
     main %>% 
       filter(Amount > 0) %>% 
       filter(Gender %in%  input$userchoice1, county == input$userchoice2) %>% 
+      group_by(county) %>%
+      mutate(avg = mean(Amount)) %>%
+      ungroup() %>%
       ggplot(aes(x = Amount, fill=county)) +
       geom_histogram() +
       facet_wrap(~county, scales="free_y") +
-      geom_vline(aes(xintercept=mean(Amount)),
+      geom_vline(aes(xintercept= avg),
                  color="royalblue1", linetype="dashed", size=1) +
       scale_x_log10(labels = scales::comma) +
       scale_color_brewer(palette="Accent") +
