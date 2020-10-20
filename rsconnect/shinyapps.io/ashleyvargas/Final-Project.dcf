@@ -1,0 +1,13 @@
+name: Final-Project
+title: Final-Project
+username:
+account: ashleyvargas
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3053964
+bundleId: 3760771
+url: https://ashleyvargas.shinyapps.io/Final-Project/
+when: 1603163280.29143
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Data with Simple Visualizations.Rmd|Final Project.Rmd|indivs_Minnesota18.csv|map_with_amts.Rmd|README.md|zip_code_database.csv
