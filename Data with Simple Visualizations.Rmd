@@ -25,7 +25,7 @@ library(leaflet)       # for highly customizable mapping
 library(ggthemes)      # for more themes (including theme_map())
 library(plotly)        # for the ggplotly() - basic interactivity
 library(gganimate)     # for adding animation layers to ggplots
-library(gifski)        # for creating the gif (don't need to load this library every time,but need it installed)
+#library(gifski)        # for creating the gif (don't need to load this library every time,but need it installed)
 library(transformr)    # for "tweening" (gganimate)
 library(shiny)         # for creating interactive apps
 library(patchwork)     # for nicely combining ggplot2 graphs  
@@ -45,6 +45,7 @@ mn_contrib <- read.csv("indivs_Minnesota18.csv")
 
 zip_codes <- read.csv("zip_code_database.csv")
 ```
+
 
 
 ```{r}
@@ -89,6 +90,18 @@ main <- mn_contrib %>%
          -county1) %>%
   mutate(county = county2) %>%
   select(-county2)
+```
+
+```{r}
+main%>%
+  select(Amount,Occupation)%>%
+  mutate(retired= Occupation=="RETIRED")
+```
+
+```{r}
+main%>%
+  select(Occupation)%>%
+  distinct(Occupation)
 ```
 
 ```{r, fig.height = 12}
