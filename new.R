@@ -5,8 +5,10 @@ library(shinythemes)
 
 
 
-mn_contrib <- read_csv("indivs_Minnesota18.csv")
-zip_codes <- read_csv("zip_code_database.csv")
+
+
+mn_contrib <- read_csv("~/Desktop/Stat112/indivs_Minnesota18.csv")
+zip_codes <- read_csv("~/Desktop/Stat112/zip_code_database.csv")
 
 
 
@@ -51,7 +53,12 @@ main <- mn_contrib %>%
   select(-county2) 
 
 
+
 ui <- fluidPage(theme = shinytheme("cerulean"),
+                selectInput(inputId = "userchoice1", 
+                            label = "Input Gender Here", 
+                            choices = c(Female = "F", Male = "M"), 
+                            multiple = FALSE),
                 selectInput(inputId = "userchoice2", 
                             "Input County Here", 
                             choices = list("ramsey","hennepin","houston","anoka","winona","renville","st louis",
@@ -85,30 +92,20 @@ server <- function(input, output){
   output$timeplot <- renderPlot({
     main %>% 
       filter(Amount > 0) %>% 
-      filter(Gender %in% c("M", "F"), county %in% input$userchoice2) %>%
-      group_by(county, Gender) %>%
-      mutate(avg = mean(Amount)) %>%
-      ungroup() %>%
-      ggplot(aes(x = Amount)) +
-      geom_histogram(color = "black", data=subset(main, Gender  %in% "M" & county  %in% input$userchoice2),  aes(fill = "M"), alpha = 0.3) +
-      geom_histogram(color = "black", data=subset(main, Gender  %in% "F" & county  %in% input$userchoice2),  aes(fill = "F"), alpha = 0.3) +
+      filter(Gender %in%  input$userchoice1, county == input$userchoice2) %>% 
+      ggplot(aes(x = Amount, fill=county)) +
+      geom_histogram() +
       facet_wrap(~county, scales="free_y") +
-      geom_vline(aes(xintercept= avg),
-                 color= "red", linetype="dashed", size=1) +
-      scale_x_log10(breaks = scales::log_breaks(n=10), labels = scales::comma_format(accuracy = 1)) +
-      scale_fill_manual(name="Sex",
-                        values=c("M"="red", "F"="blue")) +
+      geom_vline(aes(xintercept=mean(Amount)),
+                 color="royalblue1", linetype="dashed", size=1) +
+      scale_x_log10(labels = scales::comma) +
+      scale_color_brewer(palette="Accent") +
       labs(title = "Minnesota Political Donations by County and Sex",
            x = "",
            y = "") +
-      theme_minimal() +
-      theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 20),
-            strip.text = element_text(size=15), 
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.border = element_blank(),
-            panel.background = element_blank())})
+      theme_minimal()})
 }
+
 
 
 
@@ -116,14 +113,5 @@ shinyApp(ui = ui, server = server)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+ 
+#another choice input. add titles (bold and center)
