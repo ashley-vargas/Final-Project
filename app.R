@@ -135,7 +135,7 @@ server <- function(input, output){
       facet_grid(county ~ Gender, scales="free_y") +
       geom_vline(aes(xintercept = avg),
                  color="black", linetype="dashed", size=1) +
-      geom_text(aes(avg, 0,label = paste0("Mean = ", round(avg)), hjust = -0.25, vjust = -3)) + 
+      geom_text(aes(avg, 0,label = paste0("Mean = ", round(avg)), hjust = -0.2, vjust = -3)) + 
       scale_x_log10(labels = scales::comma) +
       scale_fill_brewer(palette="Dark2") +
       labs(title = "Minnesota Political Donations by County and Sex",
