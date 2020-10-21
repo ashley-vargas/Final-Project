@@ -106,7 +106,7 @@ server <- function(input, output){
         filter(Gender == c("M", "F")) %>%
         group_by(county, Gender) %>%
         mutate(total_contribs = n()) %>%
-        filter(total_contribs > 25) %>%
+        filter(total_contribs > 1) %>%
         summarize(mean_amt = mean(Amount)) %>%
         ggplot() + 
         geom_map(map = mn_county, aes(map_id = county, fill = mean_amt)) +
