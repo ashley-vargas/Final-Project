@@ -129,6 +129,12 @@ main%>%
 ```
 
 ```{r}
+main %>%
+  filter((cand_party == "DEM") | (cand_party == "REP")  | (cand_party == "DFL"))
+```
+
+
+```{r}
 main%>%
   select(Occupation)%>%
   distinct(Occupation)
@@ -164,6 +170,7 @@ main%>%
   panel.grid = element_blank(),
   axis.title = element_blank()
   ) + 
+  guides(fill = FALSE) + 
   facet_wrap(~Gender)) %>%
   ggplotly()
 ```

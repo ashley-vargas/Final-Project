@@ -6,10 +6,10 @@ library(maps)
 library(plotly)
 
 
-mn_contrib <- read_csv("~/Desktop/Stat112/Final-Project/indivs_Minnesota18.csv")
-zip_codes <- read_csv("~/Desktop/Stat112/Final-Project/zip_code_database.csv")
-committees <- read_csv("~/Desktop/Stat112/Final-Project/fecinfo.csv")
-candidates <- read.csv("~/Desktop/Stat112/Final-Project/candidates.csv")
+mn_contrib <- read_csv("indivs_Minnesota18.csv")
+zip_codes <- read_csv("zip_code_database.csv")
+committees <- read_csv("fecinfo.csv")
+candidates <- read.csv("candidates.csv")
 
 
 
@@ -111,7 +111,7 @@ ui<-fluidPage(theme = shinytheme("cerulean"),
                                          multiple = TRUE), 
                              submitButton(text = "Create my plot!")),
                 mainPanel("main panel",
-                          verticalLayout(plotOutput("mapping",width="870px",height="400px"),
+                          verticalLayout(plotlyOutput("mapping",width="870px",height="400px"),
                                          plotOutput("timeplot")))))
 
 
@@ -119,16 +119,29 @@ ui<-fluidPage(theme = shinytheme("cerulean"),
 
 
 server <- function(input, output){
-  output$mapping <- renderPlot({
-    main %>%
-      group_by(county) %>%
-      mutate(total_contribs = n()) %>%
-      filter(total_contribs > 25) %>%
-      summarize(mean_amt = mean(Amount)) %>%
-      ggplot() + 
-      geom_map(map = mn_county, aes(map_id = county, fill = mean_amt)) +
-      labs(x="long",y="lat",title = "Mean amount of donations for each county") +
-      expand_limits(x = mn_county$long, y = mn_county$lat)})
+  output$mapping <- renderPlotly({
+    print(
+      ggplotly(
+        main %>%
+        filter(Gender == c("M", "F")) %>%
+        group_by(county, Gender) %>%
+        mutate(total_contribs = n()) %>%
+        filter(total_contribs > 25) %>%
+        summarize(mean_amt = mean(Amount)) %>%
+        ggplot() + 
+        geom_map(map = mn_county, aes(map_id = county, fill = mean_amt)) +
+        expand_limits(x = mn_county$long, y = mn_county$lat) + 
+        scale_fill_gradient(low = "white", high = "black") + 
+        theme(
+          axis.text = element_blank(),
+          axis.line = element_blank(),
+          axis.ticks = element_blank(),
+          panel.border = element_blank(),
+          panel.grid = element_blank(),
+          axis.title = element_blank()
+        ) + 
+        facet_wrap(~Gender)
+        ))})
   output$timeplot <- renderPlot({
     main %>% 
       filter(Amount > 0) %>%
@@ -142,7 +155,7 @@ server <- function(input, output){
       geom_vline(aes(xintercept = avg),
                  color="royalblue1", linetype="dashed", size=1) +
       scale_x_log10(labels = scales::comma) +
-      scale_fill_brewer(palette="Blues") +
+      scale_fill_brewer(palette="Pastel1") +
       labs(title = "Minnesota Political Donations by County and Sex",
            x = "",
            y = "") +
