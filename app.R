@@ -1,16 +1,15 @@
-
-
 library(shiny)
 library(tidyverse)
 library(rsconnect)
 library(shinythemes)
 library(maps)
+library(plotly)
 
 
-
-
-mn_contrib <- read_csv("indivs_Minnesota18.csv")
-zip_codes <- read_csv("zip_code_database.csv")
+mn_contrib <- read_csv("~/Desktop/Stat112/Final-Project/indivs_Minnesota18.csv")
+zip_codes <- read_csv("~/Desktop/Stat112/Final-Project/zip_code_database.csv")
+committees <- read_csv("~/Desktop/Stat112/Final-Project/fecinfo.csv")
+candidates <- read.csv("~/Desktop/Stat112/Final-Project/candidates.csv")
 
 
 
@@ -52,9 +51,32 @@ main <- mn_contrib %>%
          -county, 
          -county1) %>%
   mutate(county = county2) %>%
-  select(-county2) 
+  select(-county2) %>%
+  left_join(committees, by = "CmteId") %>%
+  left_join(candidates, by =  c("cm_cand_id" = "cand_id")) %>%
+  select(-Fectransid, 
+         -Recipid, 
+         -CmteId, 
+         -cm_treasurer_name, 
+         -cm_address_line_1, 
+         -cm_address_line_2, 
+         -cm_city, 
+         -cm_state, 
+         -cm_zip, 
+         -cm_desig, 
+         -cm_type, 
+         -cm_freq, 
+         -cm_interest, 
+         -cm_cand_id, 
+         -cand_election_year, 
+         -cand_status, 
+         -cand_cmte, 
+         -cand_st1, 
+         -cand_st2, 
+         -cand_zip,
+         -cand_state2) 
 
-ui<-fluidPage(
+ui<-fluidPage(theme = shinytheme("cerulean"),
   titlePanel("Minnesota Political Donations"),
   sidebarLayout(position = "left",
                 sidebarPanel("sidebar panel",
@@ -89,32 +111,14 @@ ui<-fluidPage(
                                          multiple = TRUE), 
                              submitButton(text = "Create my plot!")),
                 mainPanel("main panel",
-                            verticalLayout(plotOutput("timeplot"), 
-                                        plotOutput("mapping",width="400px",height="300px")))))
+                          verticalLayout(plotOutput("mapping",width="870px",height="400px"),
+                                         plotOutput("timeplot")))))
 
 
 
 
 
 server <- function(input, output){
-  output$timeplot <- renderPlot({
-    main %>% 
-      filter(Amount > 0) %>%
-      filter(Gender %in%  input$userchoice1, county == input$userchoice2) %>% 
-      group_by(county) %>%
-      mutate(avg = mean(Amount)) %>%
-      ungroup() %>% 
-      ggplot(aes(x = Amount, fill=county)) +
-      geom_histogram() +
-      facet_wrap(~county, scales="free_y") +
-      geom_vline(aes(xintercept=avg),
-                 color="royalblue1", linetype="dashed", size=1) +
-      scale_x_log10(labels = scales::comma) +
-      scale_color_brewer(palette="Accent") +
-      labs(title = "Minnesota Political Donations by County and Sex",
-           x = "",
-           y = "") +
-      theme_minimal()})
   output$mapping <- renderPlot({
     main %>%
       group_by(county) %>%
@@ -123,16 +127,36 @@ server <- function(input, output){
       summarize(mean_amt = mean(Amount)) %>%
       ggplot() + 
       geom_map(map = mn_county, aes(map_id = county, fill = mean_amt)) +
-      labs(x="long",y="lat",title = "Mean amount of donations for each county")+
+      labs(x="long",y="lat",title = "Mean amount of donations for each county") +
       expand_limits(x = mn_county$long, y = mn_county$lat)})
-}
-
+  output$timeplot <- renderPlot({
+    main %>% 
+      filter(Amount > 0) %>%
+      filter(Gender %in%  input$userchoice1, county == input$userchoice2) %>% 
+      group_by(county) %>%
+      mutate(avg = mean(Amount)) %>%
+      ungroup() %>% 
+      ggplot(aes(x = Amount, fill=county)) +
+      geom_histogram(color = "white") +
+      facet_wrap(~county, scales="free_y") +
+      geom_vline(aes(xintercept = avg),
+                 color="royalblue1", linetype="dashed", size=1) +
+      scale_x_log10(labels = scales::comma) +
+      scale_fill_brewer(palette="Blues") +
+      labs(title = "Minnesota Political Donations by County and Sex",
+           x = "",
+           y = "") +
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 20),
+            strip.text = element_text(size=15), 
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank())})}
 
 
 
 shinyApp(ui = ui, server = server)
-
-
 
 
 
