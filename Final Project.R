@@ -2,9 +2,6 @@ library(shiny)
 library(tidyverse)
 library(rsconnect)
 library(shinythemes)
-library(maps)
-
-
 
 
 
@@ -55,6 +52,7 @@ main <- mn_contrib %>%
   mutate(county = county2) %>%
   select(-county2) 
 
+
 ui<-fluidPage(
   titlePanel("Minnesota Political Donations"),
   
@@ -93,8 +91,11 @@ ui<-fluidPage(
                 ),
                 mainPanel("main panel",
                           fluidRow(
-                            splitLayout(cellWidths = c("50%", "50%"), plotOutput("timeplot",width="400px",height="300px"), plotOutput("mapping",width="400px",height="300px"))
-                          )
+                            column(1,
+                                   plotOutput("mapping",width="400px",height="300px"))),
+                          fluidRow(
+                            column(1,
+                                   plotOutput("timeplot",width="400px",height="350px")))
                 )
   )
 )
@@ -108,13 +109,10 @@ server <- function(input, output){
     main %>% 
       filter(Amount > 0) %>% 
       filter(Gender %in%  input$userchoice1, county == input$userchoice2) %>% 
-      group_by(county) %>%
-      mutate(avg = mean(Amount)) %>%
-      ungroup() %>%
       ggplot(aes(x = Amount, fill=county)) +
       geom_histogram() +
       facet_wrap(~county, scales="free_y") +
-      geom_vline(aes(xintercept= avg),
+      geom_vline(aes(xintercept=mean(Amount)),
                  color="royalblue1", linetype="dashed", size=1) +
       scale_x_log10(labels = scales::comma) +
       scale_color_brewer(palette="Accent") +
