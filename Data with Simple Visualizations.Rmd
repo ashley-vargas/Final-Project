@@ -36,6 +36,7 @@ gs4_deauth()           # To not have to authorize each time you knit.
 library(mapproj)
 theme_set(theme_minimal())
 library(ggmap)
+library(plotly)
 ```
 
 
@@ -44,6 +45,10 @@ library(ggmap)
 mn_contrib <- read.csv("indivs_Minnesota18.csv")
 
 zip_codes <- read.csv("zip_code_database.csv")
+
+committees <- read.csv("fecinfo.csv")
+
+candidates <- read.csv("candidates.csv")
 ```
 
 
@@ -89,7 +94,32 @@ main <- mn_contrib %>%
          -county, 
          -county1) %>%
   mutate(county = county2) %>%
-  select(-county2)
+  select(-county2) %>%
+  left_join(committees, by = "CmteId") %>%
+  left_join(candidates, by =  c("cm_cand_id" = "cand_id")) %>%
+  select(-Fectransid, 
+         -Recipid, 
+         -CmteId, 
+         -cm_treasurer_name, 
+         -cm_address_line_1, 
+         -cm_address_line_2, 
+         -cm_city, 
+         -cm_state, 
+         -cm_zip, 
+         -cm_desig, 
+         -cm_type, 
+         -cm_freq, 
+         -cm_interest, 
+         -cm_cand_id, 
+         -cand_election_year, 
+         -cand_status, 
+         -cand_cmte, 
+         -cand_st1, 
+         -cand_st2, 
+         -cand_zip,
+         -cand_state2)
+
+main
 ```
 
 ```{r}
@@ -116,14 +146,26 @@ main%>%
 ```
 
 ```{r}
-main %>%
-  group_by(county) %>%
+(main %>%
+  filter(Gender == c("M", "F")) %>%
+  group_by(county, Gender) %>%
   mutate(total_contribs = n()) %>%
   filter(total_contribs > 25) %>%
   summarize(mean_amt = mean(Amount)) %>%
   ggplot() + 
   geom_map(map = mn_county, aes(map_id = county, fill = mean_amt)) +
-  expand_limits(x = mn_county$long, y = mn_county$lat) 
+  expand_limits(x = mn_county$long, y = mn_county$lat) + 
+  scale_fill_gradient(low = "white", high = "black") + 
+  theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank()
+  ) + 
+  facet_wrap(~Gender)) %>%
+  ggplotly()
 ```
 
 ```{r, fig.width = 10}

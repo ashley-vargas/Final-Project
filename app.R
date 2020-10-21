@@ -6,10 +6,19 @@ library(maps)
 library(plotly)
 
 
+<<<<<<< HEAD
 mn_contrib <- read_csv("~/Desktop/Stat112/Final-Project/indivs_Minnesota18.csv")
 zip_codes <- read_csv("~/Desktop/Stat112/Final-Project/zip_code_database.csv")
 committees <- read_csv("~/Desktop/Stat112/Final-Project/fecinfo.csv")
 candidates <- read.csv("~/Desktop/Stat112/Final-Project/candidates.csv")
+=======
+
+
+mn_contrib <- read_csv("indivs_Minnesota18.csv")
+zip_codes <- read_csv("zip_code_database.csv")
+committees <- read.csv("fecinfo.csv")
+candidates <- read.csv("candidates.csv")
+>>>>>>> 9b403abe00a673b9a46515c0a07e8a5b3f4b4f56
 
 
 
@@ -76,7 +85,11 @@ main <- mn_contrib %>%
          -cand_zip,
          -cand_state2) 
 
+<<<<<<< HEAD
 ui<-fluidPage(theme = shinytheme("cerulean"),
+=======
+ui<-fluidPage(
+>>>>>>> 9b403abe00a673b9a46515c0a07e8a5b3f4b4f56
   titlePanel("Minnesota Political Donations"),
   sidebarLayout(position = "left",
                 sidebarPanel("sidebar panel",
