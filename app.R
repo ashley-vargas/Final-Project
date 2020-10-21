@@ -76,37 +76,21 @@ main <- mn_contrib %>%
          -cand_zip,
          -cand_state2) 
 
+counties <- main  %>%
+  select(county) %>%
+  distinct(county)
+
 ui<-fluidPage(theme = shinytheme("cerulean"),
   titlePanel("2018 Minnesota Political Donations"),
   sidebarLayout(position = "left",
                 sidebarPanel("",
                              selectInput(inputId = "userchoice2", 
                                          "Input County Here", 
-                                         choices = list("ramsey","hennepin","houston","anoka","winona","renville","st louis",
-                                                        "sherburne","brown","itasca","scott","dakota","washington","olmsted","wright",
-                                                        "rice","goodhue","kandiyohi","le sueur","mcleod","carlton","becker","blue earth",
-                                                        "benton","carver","mille lacs","clay","cook","otter tail","big stone",
-                                                        "chisago","stearns","mower","pine","hubbard","todd","crow wing","meeker",
-                                                        "polk","nicollet","aitkin","wadena","faribault","pierce","isanti","fillmore",
-                                                        "lake","beltrami","cass","st croix","martin","douglas","stevens","morrison",
-                                                        "watonwan","cottonwood","swift","clearwater","lyon","sibley","steele","wabasha",
-                                                        "freeborn","murray","wilkin","traverse","marshall","norman","koochiching",
-                                                        "chippewa","lac qui parle","grant","yellow medicine","roseau","pennington",
-                                                        "red lake","dodge","pope","redwood","kanabec","pipestone","erie","lake of the woods",
-                                                        "lincoln","nobles","jackson","santa fe","st louis city","waseca","madison",
-                                                        "dupage","washtenaw","rock","marin","kittson","worcester","portage","tippecanoe",
-                                                        "clark","milwaukee","harris","fayette","osage","macomb","taos","wayne","carbon",
-                                                        "rankin","nassau","burnett","chaves","hamilton","bernalillo","isabella","ingham",
-                                                        "lancaster","marquette","denver","clare","panola","bay","richland","traill",
-                                                        "pembina","avoyelles parish","wake","johnson","district of columbia","montgomery",
-                                                        "san juan","missoula","woodbury","fairfax","cuyahoga","berrien","los alamos",
-                                                        "boone","fulton","prince george's","lewis and clark","santa barbara","king",
-                                                        "antrim","oktibbeha","santa clara","marathon","mahoning","anne arundel","ada",
-                                                        "lee","gallatin","burleigh","navajo","midland"),
+                                         choices = counties,
                                          selected=list("ramsey","hennepin"),
                                          multiple = TRUE), 
                              submitButton(text = "Create my plot!")),
-                mainPanel("MN Political Donations by Gender",
+                mainPanel("MN Political Donations by Sex",
                           verticalLayout(plotlyOutput("mapping",width="870px",height="400px"),
                                          plotOutput("timeplot")))))
 
@@ -151,6 +135,7 @@ server <- function(input, output){
       facet_grid(county ~ Gender, scales="free_y") +
       geom_vline(aes(xintercept = avg),
                  color="black", linetype="dashed", size=1) +
+      geom_text(aes(avg, 0,label = round(avg), hjust = -1)) + 
       scale_x_log10(labels = scales::comma) +
       scale_fill_brewer(palette="Dark2") +
       labs(title = "Minnesota Political Donations by County and Sex",
