@@ -79,11 +79,7 @@ main <- mn_contrib %>%
 ui<-fluidPage(theme = shinytheme("cerulean"),
   titlePanel("2018 Minnesota Political Donations"),
   sidebarLayout(position = "left",
-                sidebarPanel("sidebar panel",
-                             selectInput(inputId = "userchoice1", 
-                                         label = "Input Gender Here", 
-                                         choices = c(Female = "F", Male = "M"), 
-                                         multiple = FALSE),
+                sidebarPanel("",
                              selectInput(inputId = "userchoice2", 
                                          "Input County Here", 
                                          choices = list("ramsey","hennepin","houston","anoka","winona","renville","st louis",
@@ -110,7 +106,7 @@ ui<-fluidPage(theme = shinytheme("cerulean"),
                                          selected=list("ramsey","hennepin"),
                                          multiple = TRUE), 
                              submitButton(text = "Create my plot!")),
-                mainPanel("main panel",
+                mainPanel("MN Political Donations by Gender",
                           verticalLayout(plotlyOutput("mapping",width="870px",height="400px"),
                                          plotOutput("timeplot")))))
 
@@ -131,7 +127,7 @@ server <- function(input, output){
         ggplot() + 
         geom_map(map = mn_county, aes(map_id = county, fill = mean_amt)) +
         expand_limits(x = mn_county$long, y = mn_county$lat) + 
-        scale_fill_gradient(low = "white", high = "black") + 
+        scale_fill_gradient(low = "navyblue", high = "red") + 
         theme(
           axis.text = element_blank(),
           axis.line = element_blank(),
@@ -145,17 +141,18 @@ server <- function(input, output){
   output$timeplot <- renderPlot({
     main %>% 
       filter(Amount > 0) %>%
-      filter(Gender %in%  input$userchoice1, county == input$userchoice2) %>% 
-      group_by(county) %>%
+      filter(county == input$userchoice2) %>% 
+      filter(Gender == "M" | Gender == "F") %>%
+      group_by(county, Gender) %>%
       mutate(avg = mean(Amount)) %>%
       ungroup() %>% 
-      ggplot(aes(x = Amount, fill=county)) +
+      ggplot(aes(x = Amount, fill = county)) +
       geom_histogram(color = "white") +
-      facet_wrap(~county, scales="free_y") +
+      facet_grid(county ~ Gender, scales="free_y") +
       geom_vline(aes(xintercept = avg),
-                 color="royalblue1", linetype="dashed", size=1) +
+                 color="black", linetype="dashed", size=1) +
       scale_x_log10(labels = scales::comma) +
-      scale_fill_brewer(palette="Pastel1") +
+      scale_fill_brewer(palette="Dark2") +
       labs(title = "Minnesota Political Donations by County and Sex",
            x = "",
            y = "") +
