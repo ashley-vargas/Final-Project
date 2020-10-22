@@ -2,14 +2,18 @@ library(shiny)
 library(tidyverse)
 library(rsconnect)
 library(shinythemes)
+library(ggthemes)  
 library(maps)
+library(ggmap)
 library(plotly)
+library(gganimate)  
 
 
 mn_contrib <- read_csv("~/Desktop/Stat112/Final-Project/indivs_Minnesota18.csv")
 zip_codes <- read_csv("~/Desktop/Stat112/Final-Project/zip_code_database.csv")
 committees <- read_csv("~/Desktop/Stat112/Final-Project/fecinfo.csv")
 candidates <- read.csv("~/Desktop/Stat112/Final-Project/candidates.csv")
+
 
 
 
@@ -76,72 +80,69 @@ main <- mn_contrib %>%
          -cand_zip,
          -cand_state2) 
 
+counties <- main  %>%
+  select(county) %>%
+  distinct(county)
+
 ui<-fluidPage(theme = shinytheme("cerulean"),
-  titlePanel("2018 Minnesota Political Donations"),
-  sidebarLayout(position = "left",
-                sidebarPanel("sidebar panel",
-                             selectInput(inputId = "userchoice1", 
-                                         label = "Input Gender Here", 
-                                         choices = c(Female = "F", Male = "M"), 
-                                         multiple = FALSE),
-                             selectInput(inputId = "userchoice2", 
-                                         "Input County Here", 
-                                         choices = list("ramsey","hennepin","houston","anoka","winona","renville","st louis",
-                                                        "sherburne","brown","itasca","scott","dakota","washington","olmsted","wright",
-                                                        "rice","goodhue","kandiyohi","le sueur","mcleod","carlton","becker","blue earth",
-                                                        "benton","carver","mille lacs","clay","cook","otter tail","big stone",
-                                                        "chisago","stearns","mower","pine","hubbard","todd","crow wing","meeker",
-                                                        "polk","nicollet","aitkin","wadena","faribault","pierce","isanti","fillmore",
-                                                        "lake","beltrami","cass","st croix","martin","douglas","stevens","morrison",
-                                                        "watonwan","cottonwood","swift","clearwater","lyon","sibley","steele","wabasha",
-                                                        "freeborn","murray","wilkin","traverse","marshall","norman","koochiching",
-                                                        "chippewa","lac qui parle","grant","yellow medicine","roseau","pennington",
-                                                        "red lake","dodge","pope","redwood","kanabec","pipestone","erie","lake of the woods",
-                                                        "lincoln","nobles","jackson","santa fe","st louis city","waseca","madison",
-                                                        "dupage","washtenaw","rock","marin","kittson","worcester","portage","tippecanoe",
-                                                        "clark","milwaukee","harris","fayette","osage","macomb","taos","wayne","carbon",
-                                                        "rankin","nassau","burnett","chaves","hamilton","bernalillo","isabella","ingham",
-                                                        "lancaster","marquette","denver","clare","panola","bay","richland","traill",
-                                                        "pembina","avoyelles parish","wake","johnson","district of columbia","montgomery",
-                                                        "san juan","missoula","woodbury","fairfax","cuyahoga","berrien","los alamos",
-                                                        "boone","fulton","prince george's","lewis and clark","santa barbara","king",
-                                                        "antrim","oktibbeha","santa clara","marathon","mahoning","anne arundel","ada",
-                                                        "lee","gallatin","burleigh","navajo","midland"),
-                                         selected=list("ramsey","hennepin"),
-                                         multiple = TRUE), 
-                             submitButton(text = "Create my plot!")),
-                mainPanel("main panel",
-                          verticalLayout(plotOutput("mapping",width="870px",height="400px"),
-                                         plotOutput("timeplot")))))
+              titlePanel("2018 Minnesota Political Donations"),
+              sidebarLayout(position = "left",
+                            sidebarPanel("",
+                                         selectInput(inputId = "userchoice2", 
+                                                     "Input County Here", 
+                                                     choices = counties,
+                                                     selected=list("ramsey","hennepin"),
+                                                     multiple = TRUE), 
+                                         submitButton(text = "Create my plot!")),
+                            mainPanel(verticalLayout(plotlyOutput("mapping",width="870px",height="400px"),
+                                                     plotOutput("timeplot")))))
+
 
 
 
 
 server <- function(input, output){
-  output$mapping <- renderPlot({
-    main %>%
-      group_by(county) %>%
-      mutate(total_contribs = n()) %>%
-      filter(total_contribs > 25) %>%
-      summarize(mean_amt = mean(Amount)) %>%
-      ggplot() + 
-      geom_map(map = mn_county, aes(map_id = county, fill = mean_amt)) +
-      labs(x="long",y="lat",title = "Mean amount of donations for each county") +
-      expand_limits(x = mn_county$long, y = mn_county$lat)})
+  output$mapping <- renderPlotly({
+    print(
+      ggplotly(
+        main %>%
+          filter(Gender == c("M", "F")) %>%
+          group_by(county, Gender) %>%
+          mutate(total_contribs = n()) %>%
+          filter(total_contribs > 1) %>%
+          summarize(mean_amt = mean(Amount)) %>%
+          ggplot() + 
+          geom_map(map = mn_county, aes(map_id = county, fill = mean_amt)) +
+          expand_limits(x = mn_county$long, y = mn_county$lat) + 
+          scale_fill_gradient(low = "navyblue", high = "red", name = "Mean Amount") + 
+          labs(title = "Minnesota Political Donations by Sex",
+               x = "",
+               y = "") +
+          theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 13),
+            axis.text = element_blank(),
+            axis.line = element_blank(),
+            axis.ticks = element_blank(),
+            panel.border = element_blank(),
+            panel.grid = element_blank(),
+            axis.title = element_blank()) + 
+          facet_wrap(~Gender)
+      ))})
   output$timeplot <- renderPlot({
     main %>% 
       filter(Amount > 0) %>%
-      filter(Gender %in%  input$userchoice1, county == input$userchoice2) %>% 
-      group_by(county) %>%
+      filter(county == input$userchoice2) %>% 
+      filter(Gender == "M" | Gender == "F") %>%
+      group_by(county, Gender) %>%
       mutate(avg = mean(Amount)) %>%
       ungroup() %>% 
-      ggplot(aes(x = Amount, fill=county)) +
+      ggplot(aes(x = Amount, fill = county)) +
       geom_histogram(color = "white") +
-      facet_wrap(~county, scales="free_y") +
+      facet_grid(county ~ Gender, scales="free_y") +
       geom_vline(aes(xintercept = avg),
-                 color="royalblue1", linetype="dashed", size=1) +
+                 color="black", linetype="dashed", size=1) +
+      geom_text(aes(avg, 0,label = paste0("Mean = ", round(avg)), hjust = -0.2, vjust = -3)) + 
       scale_x_log10(labels = scales::comma) +
-      scale_fill_brewer(palette="Blues") +
+      scale_fill_brewer(palette="Dark2") +
       labs(title = "Minnesota Political Donations by County and Sex",
            x = "",
            y = "") +
@@ -156,8 +157,3 @@ server <- function(input, output){
 
 
 shinyApp(ui = ui, server = server)
-
-
-
-
-
