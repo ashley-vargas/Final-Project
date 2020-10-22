@@ -2,17 +2,15 @@ library(shiny)
 library(tidyverse)
 library(rsconnect)
 library(shinythemes)
-library(ggthemes)  
 library(maps)
-library(ggmap)
 library(plotly)
-library(gganimate)  
 
 
 mn_contrib <- read_csv("~/Desktop/Stat112/Final-Project/indivs_Minnesota18.csv")
 zip_codes <- read_csv("~/Desktop/Stat112/Final-Project/zip_code_database.csv")
 committees <- read_csv("~/Desktop/Stat112/Final-Project/fecinfo.csv")
 candidates <- read.csv("~/Desktop/Stat112/Final-Project/candidates.csv")
+
 
 
 
@@ -117,14 +115,15 @@ server <- function(input, output){
           scale_fill_gradient(low = "navyblue", high = "red", name = "Mean Amount") + 
           labs(title = "Minnesota Political Donations by Sex",
                x = "",
-               y = "") +
-          theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 13),
+               y = "") + 
+          theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 13), 
             axis.text = element_blank(),
             axis.line = element_blank(),
             axis.ticks = element_blank(),
             panel.border = element_blank(),
             panel.grid = element_blank(),
-            axis.title = element_blank()) + 
+            axis.title = element_blank()
+          ) + 
           facet_wrap(~Gender)
       ))})
   output$timeplot <- renderPlot({
@@ -157,3 +156,10 @@ server <- function(input, output){
 
 
 shinyApp(ui = ui, server = server)
+
+
+
+
+
+
+
