@@ -117,7 +117,6 @@ ui<-fluidPage(theme = shinytheme("cerulean"),
 
 
 
-
 server <- function(input, output){
   output$mapping <- renderPlot({
     main %>%
